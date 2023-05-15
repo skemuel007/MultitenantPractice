@@ -3,6 +3,7 @@ using Core.Interfaces.Hangfire;
 using Core.Settings;
 using Hangfire;
 using Hangfire.SqlServer;
+using Infrastructure.Extensions;
 using Infrastructure.Hangfire.Providers;
 using Infrastructure.Services;
 
@@ -42,6 +43,24 @@ builder.Services.AddTransient<IBackgroundJobClient>(x => new BackgroundJobClient
 
 builder.Services.AddAndMigrateTenantDatabases(builder.Configuration);
 
+builder.Services.AddHangfire(config => config
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(builder.Configuration.GetConnectionString("HangfireConnection"), , new SqlServerStorageOptions
+    {
+        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+        QueuePollInterval = TimeSpan.Zero,
+        UseRecommendedIsolationLevel = true,
+        DisableGlobalLocks = true,
+    }));
+
+builder.Services.AddHangfireServer(options =>
+{
+    options.FilterProvider = new HangfireServerFilterProvider(new HangfireTenantProvider());
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -53,8 +72,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseRouting();
+
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseHangfireDashboard();
 
 app.Run();
