@@ -2,6 +2,7 @@ using Core.Interfaces;
 using Core.Interfaces.Hangfire;
 using Core.Settings;
 using Hangfire;
+using Hangfire.Dashboard;
 using Hangfire.SqlServer;
 using Infrastructure.Extensions;
 using Infrastructure.Hangfire.Providers;
@@ -78,6 +79,16 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseHangfireDashboard();
+
+app.UseHangfireDashboard("/hangfire", new DashboardOptions()
+{
+    Authorization = new[] { new MyAuthorizationFilter() }
+});
 
 app.Run();
+
+
+public class MyAuthorizationFilter: IDashboardAuthorizationFilter
+{
+    public bool Authorize(DashboardContext context) => true;
+}
