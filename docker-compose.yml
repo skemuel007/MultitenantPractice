@@ -1,0 +1,11 @@
+version: '3.4'
+
+services:
+  multitenantapp.api:
+    image: ${DOCKER_REGISTRY-}multitenantappapi
+    build:
+      context: .
+      dockerfile: MultitenantApp.Api/Dockerfile
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2019-latest

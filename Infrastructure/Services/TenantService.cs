@@ -52,7 +52,8 @@ namespace Infrastructure.Services
 
         public string GetConnectionString()
         {
-            return _currentTenant.ConnectionString;
+            // return _currentTenant?.ConnectionString ?? _tenantSettings.Defaults.ConnectionString;
+            return _currentTenant?.ConnectionString;
         }
 
         public string GetDatabaseProvider()

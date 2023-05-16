@@ -1,6 +1,7 @@
 ﻿using Core.Interfaces.Hangfire;
 using Hangfire;
 using Hangfire.Common;
+using Infrastructure.Hangfire.Filters;
 
 namespace Infrastructure.Hangfire.Providers
 {
@@ -17,7 +18,7 @@ namespace Infrastructure.Hangfire.Providers
             return new JobFilter[]
             {
                 new JobFilter(new CaptureCultureAttribute(), JobFilterScope.Global, null),
-                new JobFilter(new HangfireClientTenantFilter(_tenantService), JobFilterScope.Global, null),
+                new JobFilter(new HangfireServerTenantFilter(_hangfireTenantProvider), JobFilterScope.Global, null),
             };
         }
     }

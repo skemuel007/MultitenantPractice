@@ -1,0 +1,57 @@
+version: '3.4'
+
+services:
+  multitenantapp.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      # - ASPNETCORE_URLS=https://+:443;http://+:80
+      - "ConnectionStrings:HangfireConnection=Server=db;Database=MultiTenantHangfireDb;User Id=sa;Password=MultiTenant1234;"
+      - "Logging:LogLevel:Default=Information"
+      - "Logging:LogLevel:Microsoft=Warning"
+      - "Logging:LogLevel:Microsoft.AspNetCore=Warning"
+      - "Logging:LogLevel:Microsoft.Hosting.Lifetime=Information"
+      - "Logging:LogLevel:Hangfire=Information"
+      - "TenantSettings:Defaults:DBProvider=mssql"
+      - "TenantSettings:Defaults:ConnectionString=Server=db;Database=SharedTenantDb;User Id=sa;Password=MultiTenant1234;"
+      - "TenantSettings__Tenants__0__Name=Alpha"
+      - "TenantSettings__Tenants__0__TID=Alpha"
+      - "TenantSettings__Tenants__0__ConnectionString=Server=db;Database=AlphaTenantDb;User Id=sa;Password=MultiTenant1234;"
+      - "TenantSettings__Tenants__1__Name=Beta"
+      - "TenantSettings__Tenants__1__TID=Beta"
+      - "TenantSettings__Tenants__1__ConnectionString=Server=db;Database=BetaTenantDb;User Id=sa;Password=MultiTenant1234;"
+      - "TenantSettings__Tenants__2__Name=Charlie"
+      - "TenantSettings__Tenants__2__TID=Charlie"
+      - "TenantSettings__Tenants__3__Name=Java"
+      - "TenantSettings__Tenants__3__TID=Java"
+    ports:
+      - "9000:80"
+      # - "443"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+    depends_on:
+      - db
+    networks:
+      - multitenant_network
+
+  db:
+    container_name: multitenant_db
+    restart: always
+    ports:
+      - "1433:1433"
+    environment:
+      MSSQL_SA_PASSWORD: "MultiTenant1234"
+      MSSQL_PID: "Developer"
+      MSSQL_USER: "SA"
+      ACCEPT_EULA: "Y"
+    volumes:
+      - multitenant_data:/var/opt/mssql
+    networks:
+      - multitenant_network 
+  
+volumes:
+  multitenant_data:
+
+networks:
+  multitenant_network:
+    driver: bridge
